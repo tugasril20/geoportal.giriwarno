@@ -176,7 +176,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const CENTER=[-7.46,110.13];
 // field = nama kolom kategori (kosongkan agar dicari otomatis dari daftar hint)
 const LAYERS={
-  batas:{title:"Batas Administrasi",file:"BATAS ADMINISTRASI_WPwp.geojsonl",op:1},
+  batas:{title:"Batas Administrasi",file:"BATAS ADMINISTRASI_WP.geojsonl",op:1},
   persil:{title:"Persil Tanah",file:"PERSIL.geojsonl",op:.6,field:"",fl:"Jenis hak",hint:["jenis_hak","tipehak","tipe_hak","jenishak","hak","status_hak"]},
   lahan:{title:"Penggunaan Lahan",file:"PL.geojsonl",op:.6,field:"",fl:"Penggunaan lahan",hint:["penggunaan","penggunaan_lahan","guna_lahan","jenis","pl","kelas","tipe","remark","namobj"]}
 };
