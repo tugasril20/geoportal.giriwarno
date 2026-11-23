@@ -139,7 +139,7 @@ select,input[type=text],input[type=password],input[type=file]{width:100%;padding
     <input type="file" id="upFile" accept=".geojson,.json,.geojsonl">
     <button class="btn p" id="upBtn">Validasi dan upload</button>
     <div id="upMsg" class="small"></div>
-    <div class="small">.geojson/.geojsonl, maks 2 MB, maks 500 fitur, WGS84. Hanya tampil di browser ini; tidak tersimpan ke GitHub.</div>
+    <div class="small">.geojson/.geojsonl, maks 25 MB, maks 20000 fitur, WGS84. Kiriman masuk antrean dan tampil untuk semua setelah disetujui super user.</div>
   </div></details>
 
   <details data-perm="admin"><summary>Panel super user <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
@@ -151,8 +151,8 @@ select,input[type=text],input[type=password],input[type=file]{width:100%;padding
 </main>
 
 <div id="login"><div class="card">
-  <b style="font-size:16px">Login</b>
-  <div id="cred"><input type="text" id="uName" placeholder="Username" autocomplete="username"><input type="password" id="uPass" placeholder="Password" autocomplete="current-password"><div class="small">Tidak punya akun? <a href="#" id="uGuest" style="color:var(--b);font-weight:700">Lanjutkan sebagai guest</a></div></div>
+  <b style="font-size:16px" id="uTitle">Login</b>
+  <div id="cred"><input type="email" id="uEmail" placeholder="Email" autocomplete="email"><input type="text" id="uName" placeholder="Username (3-30 karakter)" autocomplete="username" style="display:none"><input type="password" id="uPass" placeholder="Password (min. 8 karakter)" autocomplete="current-password"><div class="small"><a href="#" id="uMode" style="color:var(--b);font-weight:700">Belum punya akun? Daftar</a><br><a href="#" id="uGuest" style="color:var(--b);font-weight:700">Lanjutkan sebagai guest</a></div></div>
   <div class="err" id="uErr"></div>
   <div style="display:flex;gap:6px"><button class="btn p" id="uOk">Masuk</button><button class="btn" id="uCancel">Batal</button><button class="btn" id="uOut" style="margin-left:auto">Keluar</button></div>
 </div></div>
@@ -162,22 +162,26 @@ select,input[type=text],input[type=password],input[type=file]{width:100%;padding
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/proj4@2.9.2/dist/proj4.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/shpjs@4.0.4/dist/shp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
 <script>
 /* ===== KONFIGURASI ===== */
 // Lokasi file data. Default: folder "data/" di repo yang sama (GitHub Pages).
 // Alternatif: "https://raw.githubusercontent.com/USERNAME/REPO/main/data/"
-const DATA_BASE="https://tugasril20.github.io/geoportal.giriwarno/";
+const DATA_BASE="";
+// Isi dari Supabase: Project Settings > API (anon key memang boleh publik; yang melindungi data adalah RLS)
+const SUPABASE_URL="https://dnqxkldyqyredpwxiopr.supabase.co";
+const SUPABASE_KEY="sb_publishable_l4Z6Xm42kSvZKdEmuUL1xQ_qOr_pXdb";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const CENTER=[-7.46,110.13];
 // field = nama kolom kategori (kosongkan agar dicari otomatis dari daftar hint)
 const LAYERS={
-  batas:{title:"Batas Administrasi",file:"BATAS ADMINISTRASI_WP.geojsonl",op:1},
+  batas:{title:"Batas Administrasi",file:"BATAS ADMINISTRASI_WPwp.geojsonl",op:1},
   persil:{title:"Persil Tanah",file:"PERSIL.geojsonl",op:.6,field:"",fl:"Jenis hak",hint:["jenis_hak","tipehak","tipe_hak","jenishak","hak","status_hak"]},
   lahan:{title:"Penggunaan Lahan",file:"PL.geojsonl",op:.6,field:"",fl:"Penggunaan lahan",hint:["penggunaan","penggunaan_lahan","guna_lahan","jenis","pl","kelas","tipe","remark","namobj"]}
 };
 const KEYS=Object.keys(LAYERS);
 const PAL=["#11508D","#e5566b","#2fb386","#f2a93b","#8e63e6","#26a6c9","#d96bb0","#8aa03a","#e57b3c","#5a6b8c","#b5483f","#3f9aa0"];
-const USERS={admin:{pass:"rildhaadmin",role:"superuser"},user:{pass:"user123",role:"user"}}; 
 const PERM={guest:{},user:{draw:1,download:1,upload:1},superuser:{draw:1,download:1,upload:1,admin:1}};
 const $=id=>document.getElementById(id);
 const E=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -403,7 +407,7 @@ $("alBtn").onclick=async()=>{
 function validate(fs){
   const err=[];
   if(!fs.length)return["File tidak berisi fitur."];
-  if(fs.length>500)return["Maksimal 500 fitur per upload."];
+  if(fs.length>20000)return["Maksimal 20000 fitur per upload."];
   fs.forEach((f,i)=>{
     if(!["Polygon","MultiPolygon","LineString","MultiLineString"].includes(f.geometry.type))err.push(`Fitur ${i+1}: geometri harus Polygon/MultiPolygon/Line.`);
     else if(!isWGS(f))err.push(`Fitur ${i+1}: koordinat harus WGS84 (lon, lat).`);
@@ -415,22 +419,43 @@ $("upBtn").onclick=async()=>{
   const file=$("upFile").files[0],msg=$("upMsg"),key=$("upLayer").value;
   if(!file)return msg.textContent="Pilih file terlebih dahulu.";
   if(!/\.(geojson|json|geojsonl)$/i.test(file.name))return msg.textContent="Hanya .geojson, .json, atau .geojsonl.";
-  if(file.size>2*1024*1024)return msg.textContent="Ukuran file melebihi 2 MB.";
+  if(file.size>25*1024*1024)return msg.textContent="Ukuran file melebihi 25 MB.";
   const fs=parseGeo(await file.text()),err=validate(fs);
   if(err.length)return msg.innerHTML="Ditolak:<br>"+err.map(E).join("<br>");
-  const fc={type:"FeatureCollection",features:fs};
-  if(role==="superuser"){DATA[key].push(...fs);msg.textContent=`${fs.length} fitur ditambahkan.`}
-  else{PENDING.push({layer:key,fc,by:username});msg.textContent=`${fs.length} fitur masuk antrean persetujuan.`}
-  $("upFile").value="";rebuild();
+  const fc={type:"FeatureCollection",features:fs},admin=role==="superuser";
+  const {error}=await sb.from("submissions").insert({layer:key,geojson:fc,status:admin?"approved":"pending"});
+  if(error)return msg.textContent="Gagal menyimpan: "+error.message;
+  if(admin){DATA[key].push(...fs);msg.textContent=`${fs.length} fitur ditambahkan dan tersimpan.`}
+  else msg.textContent=`${fs.length} fitur masuk antrean persetujuan.`;
+  $("upFile").value="";
+  if(admin)rebuild();else await refreshPending();
 };
+async function loadApproved(){
+  const {data,error}=await sb.from("submissions").select("layer,geojson").eq("status","approved");
+  if(error)return console.warn(error.message);
+  data.forEach(r=>{if(DATA[r.layer])DATA[r.layer].push(...(r.geojson.features||[]))});
+}
+async function refreshPending(){
+  if(role==="guest"){PENDING=[];return rebuild()}
+  const {data}=await sb.from("submissions").select("id,layer,username,geojson").eq("status","pending").order("created_at");
+  PENDING=(data||[]).map(r=>({id:r.id,layer:r.layer,fc:r.geojson,by:r.username}));
+  rebuild();
+}
 function renderPending(){
   if(!can("admin"))return;
   $("pending").innerHTML=PENDING.length?PENDING.map((p,i)=>`${LAYERS[p.layer].title} oleh ${E(p.by)} (${p.fc.features.length} fitur)
     <button class="btn" onclick="approve(${i})">Setujui</button> <button class="btn" onclick="reject(${i})">Tolak</button>`).join("<br>"):"Tidak ada antrean.";
 }
-window.approve=i=>{const p=PENDING.splice(i,1)[0];DATA[p.layer].push(...p.fc.features);rebuild()};
-window.reject=i=>{PENDING.splice(i,1);rebuild()};
-$("resetData").onclick=async()=>{if(confirm("Muat ulang data dari file awal?")){PENDING=[];await Promise.all(KEYS.map(load));rebuild()}};
+async function setStatus(i,status){
+  const p=PENDING[i];if(!p)return;
+  const {error}=await sb.from("submissions").update({status}).eq("id",p.id);
+  if(error)return alert(error.message);
+  if(status==="approved")DATA[p.layer].push(...p.fc.features);
+  await refreshPending();
+}
+window.approve=i=>setStatus(i,"approved");
+window.reject=i=>setStatus(i,"rejected");
+$("resetData").onclick=async()=>{if(confirm("Muat ulang data dari file awal dan database?")){await Promise.all(KEYS.map(load));await loadApproved();await refreshPending()}};
 
 /* ===== LOGIN ===== */
 function applyRole(){
@@ -440,15 +465,37 @@ function applyRole(){
   $("dlHint").style.display=can("download")?"none":"";
   renderPending();
 }
-$("btnLogin").onclick=()=>{$("login").style.display="flex";$("uErr").textContent="";$("uOut").style.display=role==="guest"?"none":"";$("uName").focus()};
+let regMode=false;
+function setMode(r){regMode=r;$("uName").style.display=r?"":"none";$("uTitle").textContent=r?"Daftar akun":"Login";$("uOk").textContent=r?"Daftar":"Masuk";$("uMode").textContent=r?"Sudah punya akun? Masuk":"Belum punya akun? Daftar";$("uErr").textContent=""}
+$("uMode").onclick=e=>{e.preventDefault();setMode(!regMode)};
+$("btnLogin").onclick=()=>{$("login").style.display="flex";setMode(false);$("uOut").style.display=role==="guest"?"none":"";$("uEmail").focus()};
 $("uCancel").onclick=()=>$("login").style.display="none";
-$("uOut").onclick=()=>{role="guest";username="";$("login").style.display="none";applyRole()};
-$("uOk").onclick=()=>{
-  const u=$("uName").value.trim(),a=USERS[u];
-  if(!a||a.pass!==$("uPass").value)return $("uErr").textContent="Username atau password salah.";
-  role=a.role;username=u;$("uPass").value="";$("login").style.display="none";applyRole();
+$("uOut").onclick=async()=>{await sb.auth.signOut();$("login").style.display="none"};
+$("uOk").onclick=async()=>{
+  const email=$("uEmail").value.trim(),pass=$("uPass").value,err=$("uErr");err.textContent="";
+  if(!email||pass.length<8)return err.textContent="Isi email dan password (minimal 8 karakter).";
+  if(regMode){
+    const name=$("uName").value.trim();
+    if(!/^[A-Za-z0-9_.]{3,30}$/.test(name))return err.textContent="Username 3-30 karakter: huruf, angka, titik, atau underscore.";
+    const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{username:name},emailRedirectTo:location.href.split("#")[0]}});
+    if(error)return err.textContent=/database/i.test(error.message)?"Username sudah dipakai atau tidak valid.":error.message;
+    if(!data.session){setMode(false);$("uPass").value="";return err.textContent="Pendaftaran berhasil. Cek email untuk konfirmasi, lalu login."}
+  }else{
+    const {error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error)return err.textContent="Email atau password salah, atau email belum dikonfirmasi.";
+  }
+  $("uPass").value="";$("login").style.display="none";
 };
-$("uGuest").onclick=e=>{e.preventDefault();role="guest";username="";$("login").style.display="none";applyRole()};
+async function syncSession(session){
+  if(!session){role="guest";username=""}
+  else{
+    const {data}=await sb.from("profiles").select("username,role").eq("id",session.user.id).single();
+    role=data?.role||"user";username=data?.username||session.user.email.split("@")[0];
+  }
+  applyRole();await refreshPending();
+}
+sb.auth.onAuthStateChange((_e,session)=>setTimeout(()=>syncSession(session),0));
+$("uGuest").onclick=e=>{e.preventDefault();$("login").style.display="none"};
 $("uPass").onkeydown=e=>{if(e.key==="Enter")$("uOk").click()};
 $("toggle").onclick=()=>$("side").classList.toggle("hide");
 $("close").onclick=()=>$("side").classList.add("hide");
@@ -458,6 +505,7 @@ $("min").onclick=()=>$("side").classList.toggle("min");
 applyRole();
 (async()=>{
   await Promise.all(KEYS.map(load));
+  await loadApproved();
   KEYS.forEach(detect);buildFilters();rebuild();fit();
   if(!KEYS.some(k=>DATA[k].length))$("info").textContent="Data belum termuat. Cek folder data/ dan nama file.";
 })();
