@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geoportal Giriwarno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=League+Spartan:wght@800&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'DM Sans',sans-serif;background:#fff;color:#000}
+.wrap{max-width:1528px;margin:0 auto;padding:0 clamp(16px,5.8vw,100px)}
+nav{display:flex;align-items:center;gap:clamp(16px,4vw,75px);height:95px;padding-top:0}
+nav .logo{height:32px;width:194px;background:url("Logo.jpg") no-repeat left center/contain}
+nav a{font-size:15px;line-height:20px;color:#000;text-decoration:none}
+nav .auth{margin-left:auto;display:flex;gap:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-width:95px;height:29px;padding:0 12px;border-radius:20px;border:1px solid #11508D;font-size:15px;line-height:20px}
+.btn.o{color:#11508D;background:#fff}
+.btn.f{color:#fff;background:#11508D}
+.hero{position:relative;min-height:min(885px,calc(100vh - 150px));border-radius:30px;overflow:hidden;background:url("gunung.png") center/cover #11508D;display:flex;align-items:center}
+.hero::before{content:"";position:absolute;inset:0;background:#002950;opacity:.17}
+.hero::after{content:"";position:absolute;inset:0;background:url("overlay.png") center/cover}
+.in{position:relative;z-index:1;width:100%;padding:40px clamp(20px,11vw,194px);color:#fff}
+.in .k{font-weight:600;font-size:24px;line-height:30px;margin:0}
+.in h1{font:800 clamp(56px,11.6vw,200px)/.9 'League Spartan',sans-serif;letter-spacing:.02em;margin:10px 0 20px;text-shadow:0 4px 4px #00000040}
+.in p{font-weight:500;font-size:18px;line-height:30px;max-width:719px;margin:0 0 24px}
+.cta{display:inline-flex;align-items:center;gap:8px;background:#11508D;color:#fff;font-weight:700;font-size:16px;line-height:21px;padding:6px 10px 6px 14px;border-radius:20px;text-decoration:none}
+.cta i{width:33px;height:33px;margin:-6px -10px -6px 0;border-radius:50%;background:#11508D;display:grid;place-items:center;font-style:normal}
+footer{height:40px}
+@media(max-width:700px){nav{height:90px;flex-wrap:wrap;gap:12px;padding-top:12px}nav a,.btn{font-size:12.5px}nav .logo{width:140px}nav .auth{margin-left:0}}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+<nav>
+  <div class="logo" role="img" aria-label="SIP D3"></div>
+  <a href="index.html">Beranda</a>
+  <a href="#">Informasi</a>
+  <div class="auth"><a class="btn o" href="peta.html#masuk">Daftar</a><a class="btn f" href="peta.html#masuk">Masuk</a></div>
+</nav>
+<section class="hero"><div class="in">
+  <p class="k">Geoportal</p>
+  <h1>GIRIWARNO</h1>
+  <p>Platform pemetaan digital Desa Giriwarno yang menyajikan informasi data persil tanah, status hak kepemilikan, serta penggunaan lahan secara spasial dan informatif.</p>
+  <a class="cta" href="peta.html">Get started as a guest! <i>→</i></a>
+</div></section>
+<footer></footer>
+</div>
+</body>
+</html>

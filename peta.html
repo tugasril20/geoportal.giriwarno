@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebGIS Giriwarno</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+
+<style>
+:root{--ink:#17171c;--mut:#8a8a98;--line:#ececf2;--card:#f6f6f9;--b:#11508D}
+*{box-sizing:border-box}
+body{margin:0;font:13px/1.4 'DM Sans',system-ui,sans-serif;color:var(--ink);display:flex;flex-direction:column;height:100dvh;background:#e9e9f1}
+button{font:inherit;color:inherit;cursor:pointer}
+header{height:72px;flex:none;background:#fff;display:flex;align-items:center;gap:18px;padding:0 24px;border-bottom:1px solid var(--line);position:relative;z-index:1200}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px;color:var(--ink);text-decoration:none;white-space:nowrap}
+.logo{width:40px;height:40px;border-radius:12px;background:#e6eef7;color:var(--b);display:grid;place-items:center}
+.sep{width:1px;height:28px;background:var(--line)}
+nav{display:flex;gap:22px;align-items:center;font-weight:700;font-size:12.5px}
+nav a,.nv{color:var(--ink);text-decoration:none;background:none;border:0;padding:6px 0;display:flex;align-items:center;gap:6px;font-weight:700}
+.sp{margin-left:auto}
+.pill{padding:5px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:700;font-size:12px}
+.pill.user{background:#e6eef7;color:var(--b)}.pill.superuser{background:var(--b);color:#fff}
+.av{width:44px;height:44px;border-radius:50%;border:0;background:var(--b);color:#fff;display:grid;place-items:center;font-weight:800;font-size:16px;padding:0}
+.ib{width:40px;height:40px;border:0;background:none;border-radius:50%;display:grid;place-items:center;padding:0}
+.ib:hover{background:var(--card)}
+main{flex:1;position:relative;min-height:0}
+#map{position:absolute;inset:0;background:#eceef3}
+#side{position:absolute;z-index:1100;left:20px;top:16px;width:372px;max-height:calc(100% - 32px);overflow:auto;background:#fff;border-radius:18px;padding:18px;box-shadow:0 12px 40px #1e1e5a26,0 2px 6px #0001}
+#side.hide{display:none}#side.min>:not(.top){display:none}
+.top{display:flex;align-items:center;gap:4px}.top h2{margin:0;font-size:20px;font-weight:800;flex:1}
+.top .ib{width:30px;height:30px}
+.info{display:flex;align-items:center;gap:12px;margin:14px 0 4px}
+.info i{flex:none;width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;font:italic 700 16px Georgia,serif}
+.info p{flex:1;margin:0;font-weight:700}
+.btn{border:1px solid #dcdce6;background:#fff;border-radius:10px;padding:8px 12px;font-weight:700;font-size:12px}
+.btn:hover{background:var(--card)}.btn.p{background:var(--b);color:#fff;border-color:var(--b)}
+details{border-top:1px solid var(--line);margin-top:14px;padding-top:14px}
+summary{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:13px;cursor:pointer;list-style:none;margin-bottom:2px}
+summary::-webkit-details-marker{display:none}
+summary svg{color:var(--mut);transition:transform .15s}details[open]>summary svg{transform:rotate(180deg)}
+.box{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.row{background:var(--card);border-radius:12px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.chk{display:flex;align-items:center;gap:8px;flex:1;font-weight:700}
+.row small,.small{color:var(--mut);font-size:12px}.row small.bad{color:#d23a52}
+input[type=checkbox]{accent-color:var(--b);width:16px;height:16px}
+input[type=range]{width:100%;accent-color:var(--b)}
+select,input[type=text],input[type=password],input[type=file]{width:100%;padding:9px 10px;font:inherit;border:1px solid #dcdce6;border-radius:10px;background:#fff}
+.fl{display:flex;flex-direction:column;gap:5px;font-weight:700}
+.lg{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;color:var(--mut)}.lg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px}
+.err{color:#d23a52;font-size:12px;min-height:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.on{background:var(--b);color:#fff;border-color:var(--b)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--card);padding:4px;border-radius:12px}
+.seg button{border:0;background:none;padding:8px;border-radius:9px;font-weight:700;font-size:12px}
+.seg button.on{background:var(--b);color:#fff}
+.li{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--card);border-radius:10px;padding:6px 10px;color:var(--ink)}
+.x{border:0;background:none;color:var(--mut);padding:2px 6px}
+.bm-light{filter:grayscale(1) contrast(.85) brightness(1.1)}
+#coord{position:absolute;right:74px;bottom:20px;z-index:1000;background:#fff;padding:8px 14px;border-radius:999px;font-size:12px;font-weight:600;box-shadow:0 4px 14px #1e1e5a22}
+.leaflet-control-zoom{border:0!important;border-radius:14px;overflow:hidden;box-shadow:0 6px 20px #1e1e5a26!important;margin:0 20px 20px 0!important}
+.leaflet-control-zoom a{width:40px!important;height:40px!important;line-height:40px!important;font-size:20px;color:var(--ink)!important}
+.leaflet-popup-content{font:12px/1.4 'DM Sans',sans-serif}table.pop td{padding:1px 8px 1px 0;vertical-align:top}
+#login{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:3000}
+#login .card{background:#fff;padding:22px;border-radius:20px;width:320px;display:flex;flex-direction:column;gap:10px}
+#cred{display:flex;flex-direction:column;gap:8px}
+@media(max-width:700px){
+ header{padding:0 12px;gap:10px}nav,.sep{display:none}.brand{font-size:14px}
+ #side{left:12px;right:12px;top:12px;width:auto;max-height:62%}#coord{display:none}
+}
+</style>
+</head>
+
+<body>
+<header>
+  <a class="brand" href="index.html"><span class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a6 6 0 0 0-6 6c0 4.5 6 11 6 11s6-6.5 6-11a6 6 0 0 0-6-6zm0 8.2A2.2 2.2 0 1 1 12 5.8a2.2 2.2 0 0 1 0 4.4z"/><path d="M3 20l3-1.2v2.2L3 22.2zm18 0-3-1.2v2.2l3 1.2z"/></svg></span>Geoportal Giriwarno</a>
+  <i class="sep"></i>
+  <nav>
+    <a href="index.html">Beranda</a>
+  </nav>
+  <span class="sp"></span>
+  <span id="badge" class="pill">Guest</span>
+  <button class="av" id="btnLogin" title="Login / akun"></button>
+  <button class="ib" id="toggle" title="Tampilkan/sembunyikan panel"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</header>
+<main>
+<div id="map"></div>
+<aside id="side">
+  <div class="top"><h2 id="hello">Halo, Penjelajah!</h2>
+    <button class="ib" id="min" title="Ciutkan"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+    <button class="ib" id="close" title="Tutup"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="info"><i>i</i><p id="info">Memuat data…</p><button class="btn" id="zoomAll">Zoom data</button></div>
+
+  <details open><summary>Layer peta <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box" id="layerList"></div></details>
+
+  <details><summary>Tambah layer <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
+    <div class="small">Upload shapefile dalam format <b>.zip</b> (berisi .shp, .shx, .dbf, dan .prj) dengan sistem koordinat WGS 84 EPSG:4326 atau UTM WGS 84 zona 46 s/d 54. File GeoJSON juga bisa. Maks 25 MB.</div>
+    <input type="file" id="alFile" accept=".zip,.geojson,.json,.geojsonl">
+    <label class="fl">Zona UTM <small>(dipakai bila .prj tidak ada dan koordinat dalam meter)</small><select id="utmZ"></select></label>
+    <button class="btn p" id="alBtn">Tambahkan ke peta</button>
+    <div id="alMsg" class="small"></div>
+    <div id="userLayers" class="box" style="margin:0"></div>
+  </div></details>
+
+  <details open><summary>Basemap <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box"><div class="seg"><button data-bm="terang" class="on">Terang</button><button data-bm="osm">OSM</button><button data-bm="sat">Satelit</button></div></div></details>
+
+  <details open><summary>Filter data <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
+    <div id="filters" class="box" style="margin:0"></div>
+    <button class="btn" id="fReset">Reset filter</button>
+  </div></details>
+
+  <details><summary>Pengukuran <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
+    <div class="small">Untuk mengukur di peta, pilih Ukur Panjang atau Ukur Luas.</div>
+    <div class="pair"><button class="btn" data-draw="line"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="1.5"/><path d="M6 8v3M10 8v4M14 8v3M18 8v4"/></svg>Ukur Panjang</button>
+    <button class="btn" data-draw="area"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17 7 6l12 2-1 10z"/></svg>Ukur Luas</button></div>
+    <div id="mList" class="box" style="margin:0"><span class="small">Belum ada pengukuran.</span></div>
+    <button class="btn" id="clrMeas">Hapus pengukuran</button>
+  </div></details>
+
+  <details><summary>Digitasi polygon <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
+    <div class="small">Klik tiap titik di peta, klik titik pertama untuk menutup polygon. Luas tampil saat menggambar.</div>
+    <div class="pair"><button class="btn" data-draw="digit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17 7 6l12 2-1 10z"/></svg>Gambar polygon</button>
+    <button class="btn" id="editDraw">Edit bentuk</button></div>
+    <div id="measureList" class="box" style="margin:0"><span class="small">Belum ada objek digitasi.</span></div>
+    <button class="btn" id="dlDraw" data-perm="download">Unduh digitasi (GeoJSON)</button>
+    <div class="small" id="dlHint">Login sebagai user untuk mengunduh hasil digitasi (GeoJSON).</div>
+    <button class="btn" id="clrDraw">Hapus semua digitasi</button>
+  </div></details>
+
+
+  <details data-perm="download"><summary>Unduh data (CSV) <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
+    <div class="small">Sesuai filter aktif, termasuk lat/long titik pusat.</div><div id="csvBtns" class="box" style="margin:0"></div>
+  </div></details>
+
+  <details data-perm="upload"><summary>Upload data <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
+    <select id="upLayer"></select>
+    <input type="file" id="upFile" accept=".geojson,.json,.geojsonl">
+    <button class="btn p" id="upBtn">Validasi dan upload</button>
+    <div id="upMsg" class="small"></div>
+    <div class="small">.geojson/.geojsonl, maks 2 MB, maks 500 fitur, WGS84. Hanya tampil di browser ini; tidak tersimpan ke GitHub.</div>
+  </div></details>
+
+  <details data-perm="admin"><summary>Panel super user <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
+    <div id="pending" class="small">Tidak ada antrean.</div>
+    <button class="btn" id="resetData">Muat ulang data awal</button>
+  </div></details>
+</aside>
+<div id="coord">Lat, Long: –</div>
+</main>
+
+<div id="login"><div class="card">
+  <b style="font-size:16px">Login</b>
+  <div id="cred"><input type="text" id="uName" placeholder="Username" autocomplete="username"><input type="password" id="uPass" placeholder="Password" autocomplete="current-password"><div class="small">Tidak punya akun? <a href="#" id="uGuest" style="color:var(--b);font-weight:700">Lanjutkan sebagai guest</a></div></div>
+  <div class="err" id="uErr"></div>
+  <div style="display:flex;gap:6px"><button class="btn p" id="uOk">Masuk</button><button class="btn" id="uCancel">Batal</button><button class="btn" id="uOut" style="margin-left:auto">Keluar</button></div>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/proj4@2.9.2/dist/proj4.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/shpjs@4.0.4/dist/shp.min.js"></script>
+
+<script>
+/* ===== KONFIGURASI ===== */
+// Lokasi file data. Default: folder "data/" di repo yang sama (GitHub Pages).
+// Alternatif: "https://raw.githubusercontent.com/USERNAME/REPO/main/data/"
+const DATA_BASE="data/";
+const CENTER=[-7.46,110.13];
+// field = nama kolom kategori (kosongkan agar dicari otomatis dari daftar hint)
+const LAYERS={
+  batas:{title:"Batas Administrasi",file:"batas_administrasi_wp.geojsonl",op:1},
+  persil:{title:"Persil Tanah",file:"persil.geojsonl",op:.6,field:"",fl:"Jenis hak",hint:["jenis_hak","tipehak","tipe_hak","jenishak","hak","status_hak"]},
+  lahan:{title:"Penggunaan Lahan",file:"pl.geojsonl",op:.6,field:"",fl:"Penggunaan lahan",hint:["penggunaan","penggunaan_lahan","guna_lahan","jenis","pl","kelas","tipe","remark","namobj"]}
+};
+const KEYS=Object.keys(LAYERS);
+const PAL=["#11508D","#e5566b","#2fb386","#f2a93b","#8e63e6","#26a6c9","#d96bb0","#8aa03a","#e57b3c","#5a6b8c","#b5483f","#3f9aa0"];
+const USERS={admin:{pass:"admin123",role:"superuser"},user:{pass:"user123",role:"user"}}; // DEMO SAJA
+const PERM={guest:{},user:{draw:1,download:1,upload:1},superuser:{draw:1,download:1,upload:1,admin:1}};
+const $=id=>document.getElementById(id);
+const E=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let DATA={batas:[],persil:[],lahan:[]},PENDING=[],role="guest",username="";
+const can=p=>!!PERM[role][p];
+
+/* ===== PARSER GEOJSON / GEOJSONL ===== */
+function parseGeo(text){
+  text=text.replace(/\u001e/g,"").trim();const out=[];
+  const add=o=>{if(!o)return;
+    if(o.type==="Feature"){if(o.geometry)out.push(o)}
+    else if(o.type==="FeatureCollection")(o.features||[]).forEach(add);
+    else if(o.type&&o.coordinates)out.push({type:"Feature",properties:{},geometry:o})};
+  text.split(/\r?\n/).forEach(l=>{l=l.trim();if(l){try{add(JSON.parse(l))}catch{}}});
+  if(!out.length){try{add(JSON.parse(text))}catch{}}
+  return out;
+}
+const isWGS=f=>{const c=turf.coordAll(f)[0];return c&&Math.abs(c[0])<=180&&Math.abs(c[1])<=90};
+
+/* ===== PETA ===== */
+const map=L.map("map",{center:CENTER,zoom:15,zoomControl:false});
+L.control.zoom({position:"bottomright"}).addTo(map);
+map.createPane("poly").style.zIndex=410;map.createPane("pending").style.zIndex=420;map.createPane("batas").style.zIndex=430;
+map.getPane("overlayPane").style.zIndex=450; // hasil digitasi di atas semua layer
+const cv=L.canvas({pane:"poly",padding:.3}),sv=L.svg({pane:"batas"});
+const BASE={
+  terang:L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,className:"bm-light",attribution:"© OpenStreetMap"}),
+  osm:L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}),
+  sat:L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"© Esri"})
+};
+let cur=BASE.terang.addTo(map);
+document.querySelectorAll("[data-bm]").forEach(b=>b.onclick=()=>{map.removeLayer(cur);cur=BASE[b.dataset.bm].addTo(map);cur.bringToBack();
+  document.querySelectorAll("[data-bm]").forEach(x=>x.classList.toggle("on",x===b))});
+map.on("mousemove",e=>$("coord").textContent=`Lat, Long: ${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`);
+const drawn=new L.FeatureGroup().addTo(map),LG={},PG=L.layerGroup().addTo(map);
+
+/* ===== UI LAYER ===== */
+$("layerList").innerHTML=KEYS.map(k=>`<div class="row"><label class="chk"><input type="checkbox" id="show-${k}" checked>${LAYERS[k].title}</label><small id="st-${k}">Memuat…</small><input type="range" class="op" data-k="${k}" min=".1" max="1" step=".1" value="${LAYERS[k].op}"></div>`).join("");
+$("csvBtns").innerHTML=KEYS.map(k=>`<button class="btn" data-csv="${k}">CSV ${LAYERS[k].title}</button>`).join("");
+$("upLayer").innerHTML=KEYS.map(k=>`<option value="${k}">${LAYERS[k].title}</option>`).join("");
+KEYS.forEach(k=>$("show-"+k).onchange=e=>{if(!LG[k])return;if(e.target.checked){LG[k].addTo(map);order()}else map.removeLayer(LG[k])});
+document.querySelectorAll(".op").forEach(s=>s.oninput=()=>{const k=s.dataset.k;LAYERS[k].op=+s.value;LG[k]&&LG[k].setStyle(sty[k])});
+
+/* ===== LOAD DATA ===== */
+async function load(k){
+  const st=$("st-"+k);
+  try{
+    const r=await fetch(DATA_BASE+LAYERS[k].file);if(!r.ok)throw Error(r.status===404?"file tidak ditemukan":"HTTP "+r.status);
+    DATA[k]=parseGeo(await r.text());
+    if(!DATA[k].length)throw Error("tidak ada fitur terbaca");
+    if(!isWGS(DATA[k][0])){DATA[k]=[];throw Error("bukan WGS84 (EPSG:4326)")}
+    st.textContent=DATA[k].length.toLocaleString("id-ID")+" fitur";
+  }catch(e){st.textContent=e.message;st.className="bad"}
+}
+function detect(k){
+  const c=LAYERS[k];if(!c.hint||!DATA[k].length)return;
+  const keys=Object.keys(DATA[k][0].properties||{});
+  c.f=c.field||keys.find(x=>c.hint.includes(x.toLowerCase()))||null;
+  if(!c.f)return;
+  c.vals=[...new Set(DATA[k].map(f=>f.properties[c.f]).filter(v=>v!==null&&v!==undefined&&v!==""))].map(String).sort();
+  if(c.vals.length>24||!c.vals.length){c.f=null;return}
+  c.map=Object.fromEntries(c.vals.map((v,i)=>[v,PAL[i%PAL.length]]));
+}
+function buildFilters(){
+  const ks=KEYS.filter(k=>LAYERS[k].f);
+  $("filters").innerHTML=ks.map(k=>{const c=LAYERS[k];return `<label class="fl">${c.fl} <small>(kolom ${E(c.f)})</small><select data-fk="${k}"><option value="">Semua</option>${c.vals.map(v=>`<option>${E(v)}</option>`).join("")}</select></label>
+    <div class="lg">${c.vals.map(v=>`<span><i style="background:${c.map[v]}"></i>${E(v)}</span>`).join("")}</div>`}).join("")||`<div class="small">Kolom kategori tidak terdeteksi. Isi "field" di LAYERS dengan nama kolom yang benar.</div>`;
+  document.querySelectorAll("[data-fk]").forEach(s=>s.onchange=()=>{LAYERS[s.dataset.fk].fv=s.value;rebuild()});
+}
+$("fReset").onclick=()=>{document.querySelectorAll("[data-fk]").forEach(s=>s.value="");KEYS.forEach(k=>LAYERS[k].fv="");rebuild()};
+
+/* ===== RENDER ===== */
+const filtered=k=>{const c=LAYERS[k];return c.fv?DATA[k].filter(f=>String(f.properties[c.f])===c.fv):DATA[k]};
+const fcol=(k,f)=>{const c=LAYERS[k];return(c.map&&c.map[String(f.properties[c.f])])||"#9aa0b4"};
+const sty={
+  batas:()=>({color:"#1b1b22",weight:2.2,dashArray:"7 5",fill:false,opacity:LAYERS.batas.op}),
+  persil:f=>({color:"#2a2a33",weight:1,fillColor:fcol("persil",f),fillOpacity:LAYERS.persil.op}),
+  lahan:f=>({color:"#555",weight:.8,fillColor:fcol("lahan",f),fillOpacity:LAYERS.lahan.op*.8})
+};
+function popupHtml(f,k,ll){
+  const rows=Object.entries(f.properties||{}).filter(([,v])=>v!==null&&v!=="").map(([a,v])=>`<tr><td><b>${E(a)}</b></td><td>${E(v)}</td></tr>`).join("");
+  let ex=`<tr><td><b>Lat, Long klik</b></td><td>${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}</td></tr>`;
+  if(/Polygon/.test(f.geometry.type)){const c=turf.centroid(f).geometry.coordinates;
+    ex=`<tr><td><b>Luas (hitung)</b></td><td>${Math.round(turf.area(f)).toLocaleString("id-ID")} m²</td></tr><tr><td><b>Pusat</b></td><td>${c[1].toFixed(6)}, ${c[0].toFixed(6)}</td></tr>`+ex}
+  return `<b>${E(titleOf(k))}</b><table class="pop">${rows}${ex}</table>`;
+}
+const order=()=>["lahan","persil"].forEach(k=>LG[k]&&map.hasLayer(LG[k])&&LG[k].bringToFront());
+function rebuild(){
+  KEYS.forEach(k=>{
+    if(LG[k])map.removeLayer(LG[k]);
+    LG[k]=L.geoJSON(filtered(k),{renderer:k==="batas"?sv:cv,style:sty[k],onEachFeature:(f,l)=>l.on("click",e=>{if(busy||ED)return;
+      L.popup({maxHeight:260}).setLatLng(e.latlng).setContent(popupHtml(f,k,e.latlng)).openOn(map);L.DomEvent.stopPropagation(e)})});
+    if($("show-"+k).checked)LG[k].addTo(map);
+  });
+  order();PG.clearLayers();
+  PENDING.forEach(p=>L.geoJSON(p.fc,{pane:"pending",style:{color:"#e67e22",weight:2,dashArray:"6 4",fillOpacity:.1}})
+    .bindPopup("Menunggu persetujuan ("+LAYERS[p.layer].title+", oleh "+E(p.by)+")").addTo(PG));
+  const n=k=>filtered(k).length.toLocaleString("id-ID");
+  $("info").textContent=`Menampilkan ${n("persil")} persil dan ${n("lahan")} bidang penggunaan lahan`;
+  renderPending();
+}
+function fit(){for(const k of["batas","persil","lahan"]){if(LG[k]){const b=LG[k].getBounds();if(b.isValid())return map.fitBounds(b.pad(.05))}}}
+$("zoomAll").onclick=fit;
+
+/* ===== CSV ===== */
+const flat=fs=>fs.map(f=>{const c=turf.centroid(f).geometry.coordinates;return{...f.properties,luas_m2:Math.round(turf.area(f)),lat:c[1].toFixed(6),long:c[0].toFixed(6)}});
+function toCSV(rows){const cols=[...new Set(rows.flatMap(r=>Object.keys(r)))],q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  return [cols.join(","),...rows.map(r=>cols.map(c=>q(r[c])).join(","))].join("\r\n")}
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+text],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
+document.querySelectorAll("[data-csv]").forEach(b=>b.onclick=()=>{
+  if(!can("download"))return;const k=b.dataset.csv,rows=flat(filtered(k));
+  if(!rows.length)return alert("Tidak ada data sesuai filter.");
+  download(`giriwarno_${k}.csv`,toCSV(rows),"text/csv;charset=utf-8");
+});
+
+/* ===== PENGUKURAN DAN DIGITASI ===== */
+L.GeometryUtil.readableArea=a=>a>=10000?(a/10000).toFixed(2)+" ha":Math.round(a).toLocaleString("id-ID")+" m²";
+const dh=L.drawLocal.draw.handlers;
+dh.polygon.tooltip={start:"Klik untuk mulai menggambar.",cont:"Klik untuk melanjutkan.",end:"Klik titik pertama untuk menutup polygon."};
+dh.polyline.tooltip={start:"Klik untuk mulai mengukur.",cont:"Klik untuk melanjutkan.",end:"Klik titik terakhir untuk selesai."};
+L.drawLocal.edit.handlers.edit.tooltip={text:"Seret titik untuk mengubah bentuk.",subtext:"Klik Simpan edit bila selesai."};
+const meas=new L.FeatureGroup().addTo(map);
+let H=null,mode="",busy=false,ED=null;
+const fmtL=m=>m>=1000?(m/1000).toFixed(2)+" km":m+" m";
+const label=p=>p.luas_m2!==undefined?`${L.GeometryUtil.readableArea(p.luas_m2)} (keliling ${fmtL(p.keliling_m)})`:p.panjang_m!==undefined?fmtL(p.panjang_m):`${p.lat}, ${p.long}`;
+function measure(l){
+  const g=l.toGeoJSON().geometry,m={};
+  if(g.type==="Polygon"){m.tipe="Poligon";m.luas_m2=Math.round(turf.area(g));m.keliling_m=Math.round(turf.length(turf.polygonToLine(turf.feature(g)),{units:"kilometers"})*1000)}
+  else if(g.type==="LineString"){m.tipe="Garis";m.panjang_m=Math.round(turf.length(turf.feature(g),{units:"kilometers"})*1000)}
+  else{m.tipe="Titik";m.lat=+g.coordinates[1].toFixed(6);m.long=+g.coordinates[0].toFixed(6)}
+  l.feature={type:"Feature",properties:m,geometry:g};
+  l.bindPopup(Object.entries(m).map(([k,v])=>`<b>${k}</b>: ${v}`).join("<br>"));
+}
+function renderMeasures(){
+  const fill=(el,g,empty)=>{const ls=g.getLayers();
+    el.innerHTML=ls.length?ls.map((l,i)=>`<div class="li"><span>${i+1}. ${label(l.feature.properties)}</span><button class="x" data-id="${g.getLayerId(l)}" title="Hapus">✕</button></div>`).join(""):`<span class="small">${empty}</span>`;
+    el.querySelectorAll(".x").forEach(b=>b.onclick=()=>{g.removeLayer(+b.dataset.id);renderMeasures()})};
+  fill($("mList"),meas,"Belum ada pengukuran.");fill($("measureList"),drawn,"Belum ada objek digitasi.");
+}
+const setActive=b=>document.querySelectorAll("[data-draw]").forEach(x=>x.classList.toggle("on",x===b));
+document.querySelectorAll("[data-draw]").forEach(b=>b.onclick=()=>{
+  if(ED)return alert("Selesaikan edit bentuk dulu (klik Simpan edit).");
+  const was=b.classList.contains("on");
+  if(H)H.disable();
+  if(was)return;
+  const t=b.dataset.draw;mode=t==="digit"?"digit":"ukur";
+  const so={color:mode==="digit"?"#e5566b":"#11508D",weight:3,fillOpacity:.15};
+  H=t==="line"?new L.Draw.Polyline(map,{shapeOptions:so,metric:true}):new L.Draw.Polygon(map,{shapeOptions:so,showArea:true,metric:true});
+  H.enable();setActive(b);
+});
+map.on(L.Draw.Event.DRAWSTART,()=>busy=true);
+map.on(L.Draw.Event.DRAWSTOP,()=>{busy=false;setActive(null)});
+map.on(L.Draw.Event.CREATED,e=>{const l=e.layer;measure(l);
+  if(mode==="digit")drawn.addLayer(l);
+  else{l.bindTooltip(label(l.feature.properties),{permanent:true,direction:"center"});meas.addLayer(l)}
+  renderMeasures()});
+map.on(L.Draw.Event.EDITED,e=>{e.layers.eachLayer(measure);renderMeasures()});
+$("editDraw").onclick=()=>{
+  if(!ED){
+    if(!drawn.getLayers().length)return alert("Belum ada objek digitasi.");
+    if(H)H.disable();
+    ED=new L.EditToolbar.Edit(map,{featureGroup:drawn});ED.enable();$("editDraw").textContent="Simpan edit";$("editDraw").classList.add("on");
+  }else{ED.save();ED.disable();ED=null;$("editDraw").textContent="Edit bentuk";$("editDraw").classList.remove("on")}
+};
+$("dlDraw").onclick=()=>{if(!can("download"))return;if(!drawn.getLayers().length)return alert("Belum ada hasil digitasi.");
+  download("digitasi_giriwarno.geojson",JSON.stringify(drawn.toGeoJSON(),null,2),"application/geo+json")};
+$("clrDraw").onclick=()=>{if(confirm("Hapus semua hasil digitasi?")){drawn.clearLayers();renderMeasures()}};
+$("clrMeas").onclick=()=>{meas.clearLayers();renderMeasures()};
+
+/* ===== TAMBAH LAYER (SHAPEFILE .ZIP / GEOJSON) ===== */
+const UL={};let uN=0;
+const titleOf=k=>(LAYERS[k]||UL[k]).title;
+$("utmZ").innerHTML=Array.from({length:9},(_,i)=>`<option value="${46+i}"${46+i===49?" selected":""}>Zona ${46+i} S</option>`).join("");
+const tx=(c,f)=>typeof c[0]==="number"?f(c):c.map(x=>tx(x,f));
+function addUserLayer(name,fc){
+  const k="u"+(++uN),col=PAL[(uN+2)%PAL.length],o=UL[k]={title:name,op:.6};
+  const st=()=>({color:col,weight:1.5,fillColor:col,fillOpacity:o.op*.7,opacity:Math.min(1,o.op+.3)});
+  o.g=L.geoJSON(fc,{renderer:cv,style:st,pointToLayer:(f,ll)=>L.circleMarker(ll,{renderer:cv,radius:5}),
+    onEachFeature:(f,l)=>l.on("click",e=>{if(busy||ED)return;
+      L.popup({maxHeight:260}).setLatLng(e.latlng).setContent(popupHtml(f,k,e.latlng)).openOn(map);L.DomEvent.stopPropagation(e)})}).addTo(map);
+  const row=document.createElement("div");row.className="row";
+  row.innerHTML=`<label class="chk"><input type="checkbox" checked><i style="width:10px;height:10px;border-radius:3px;background:${col}"></i>${E(name)}</label><small>${fc.features.length.toLocaleString("id-ID")} fitur</small><button class="x" title="Zoom ke layer">⌖</button><button class="x" title="Hapus layer">✕</button><input type="range" min=".1" max="1" step=".1" value="${o.op}">`;
+  const [cb,,zb,rb,sl]=[row.querySelector("input[type=checkbox]"),0,...row.querySelectorAll("button"),row.querySelector("input[type=range]")];
+  cb.onchange=()=>cb.checked?o.g.addTo(map):map.removeLayer(o.g);
+  sl.oninput=()=>{o.op=+sl.value;o.g.setStyle(st)};
+  zb.onclick=()=>{const b=o.g.getBounds();if(b.isValid())map.fitBounds(b.pad(.05))};
+  rb.onclick=()=>{map.removeLayer(o.g);delete UL[k];row.remove()};
+  $("userLayers").appendChild(row);
+  const b=o.g.getBounds();if(b.isValid())map.fitBounds(b.pad(.05));
+}
+$("alBtn").onclick=async()=>{
+  const file=$("alFile").files[0],msg=$("alMsg");
+  if(!file)return msg.textContent="Pilih file terlebih dahulu.";
+  if(!/\.(zip|geojson|json|geojsonl)$/i.test(file.name))return msg.textContent="Hanya .zip (shapefile), .geojson, .json, atau .geojsonl.";
+  if(file.size>25*1024*1024)return msg.textContent="Ukuran file melebihi 25 MB.";
+  msg.textContent="Membaca file…";let parts;
+  try{
+    if(/\.zip$/i.test(file.name)){
+      if(typeof shp==="undefined")return msg.textContent="Pustaka shapefile gagal dimuat. Cek koneksi internet.";
+      const r=await shp(await file.arrayBuffer());
+      parts=(Array.isArray(r)?r:[r]).map(g=>({name:g.fileName||file.name.replace(/\.zip$/i,""),fs:g.features||[]}));
+    }else parts=[{name:file.name.replace(/\.\w+$/,""),fs:parseGeo(await file.text())}];
+  }catch(e){return msg.textContent="File tidak bisa dibaca. Pastikan .zip berisi .shp, .shx, dan .dbf."}
+  let ok=0;const errs=[];
+  parts.forEach(p=>{
+    const fs=p.fs.filter(f=>f&&f.geometry);
+    if(!fs.length)return errs.push(`${p.name}: tidak ada fitur.`);
+    const fc={type:"FeatureCollection",features:fs};
+    let b=turf.bbox(fc);
+    if(b.some(v=>Math.abs(v)>180)){ // koordinat meter tanpa .prj: pakai zona UTM pilihan
+      const def=`+proj=utm +zone=${$("utmZ").value} +south +datum=WGS84 +units=m +no_defs`;
+      try{fs.forEach(f=>{if(f.geometry.coordinates)f.geometry.coordinates=tx(f.geometry.coordinates,c=>proj4(def,"EPSG:4326",[c[0],c[1]]))});b=turf.bbox(fc)}
+      catch{return errs.push(`${p.name}: gagal konversi koordinat.`)}
+    }
+    if(!(b[0]>=93&&b[2]<=142&&b[1]>=-12&&b[3]<=8))return errs.push(`${p.name}: koordinat di luar wilayah Indonesia. Cek CRS (WGS 84 atau UTM 46 s/d 54).`);
+    addUserLayer(p.name,fc);ok++;
+  });
+  $("alFile").value="";
+  msg.innerHTML=(ok?`${ok} layer ditambahkan.<br>`:"")+errs.map(E).join("<br>");
+};
+
+/* ===== UPLOAD (hanya di memori browser) ===== */
+function validate(fs){
+  const err=[];
+  if(!fs.length)return["File tidak berisi fitur."];
+  if(fs.length>500)return["Maksimal 500 fitur per upload."];
+  fs.forEach((f,i)=>{
+    if(!["Polygon","MultiPolygon","LineString","MultiLineString"].includes(f.geometry.type))err.push(`Fitur ${i+1}: geometri harus Polygon/MultiPolygon/Line.`);
+    else if(!isWGS(f))err.push(`Fitur ${i+1}: koordinat harus WGS84 (lon, lat).`);
+  });
+  return err.slice(0,8);
+}
+$("upBtn").onclick=async()=>{
+  if(!can("upload"))return;
+  const file=$("upFile").files[0],msg=$("upMsg"),key=$("upLayer").value;
+  if(!file)return msg.textContent="Pilih file terlebih dahulu.";
+  if(!/\.(geojson|json|geojsonl)$/i.test(file.name))return msg.textContent="Hanya .geojson, .json, atau .geojsonl.";
+  if(file.size>2*1024*1024)return msg.textContent="Ukuran file melebihi 2 MB.";
+  const fs=parseGeo(await file.text()),err=validate(fs);
+  if(err.length)return msg.innerHTML="Ditolak:<br>"+err.map(E).join("<br>");
+  const fc={type:"FeatureCollection",features:fs};
+  if(role==="superuser"){DATA[key].push(...fs);msg.textContent=`${fs.length} fitur ditambahkan.`}
+  else{PENDING.push({layer:key,fc,by:username});msg.textContent=`${fs.length} fitur masuk antrean persetujuan.`}
+  $("upFile").value="";rebuild();
+};
+function renderPending(){
+  if(!can("admin"))return;
+  $("pending").innerHTML=PENDING.length?PENDING.map((p,i)=>`${LAYERS[p.layer].title} oleh ${E(p.by)} (${p.fc.features.length} fitur)
+    <button class="btn" onclick="approve(${i})">Setujui</button> <button class="btn" onclick="reject(${i})">Tolak</button>`).join("<br>"):"Tidak ada antrean.";
+}
+window.approve=i=>{const p=PENDING.splice(i,1)[0];DATA[p.layer].push(...p.fc.features);rebuild()};
+window.reject=i=>{PENDING.splice(i,1);rebuild()};
+$("resetData").onclick=async()=>{if(confirm("Muat ulang data dari file awal?")){PENDING=[];await Promise.all(KEYS.map(load));rebuild()}};
+
+/* ===== LOGIN ===== */
+function applyRole(){
+  $("badge").textContent=role==="superuser"?"Super user":role==="user"?"User":"Guest";$("badge").className="pill "+role;
+  $("btnLogin").innerHTML=username?E(username[0].toUpperCase()):`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>`;
+  document.querySelectorAll("[data-perm]").forEach(el=>el.style.display=can(el.dataset.perm)?"":"none");
+  $("dlHint").style.display=can("download")?"none":"";
+  renderPending();
+}
+$("btnLogin").onclick=()=>{$("login").style.display="flex";$("uErr").textContent="";$("uOut").style.display=role==="guest"?"none":"";$("uName").focus()};
+$("uCancel").onclick=()=>$("login").style.display="none";
+$("uOut").onclick=()=>{role="guest";username="";$("login").style.display="none";applyRole()};
+$("uOk").onclick=()=>{
+  const u=$("uName").value.trim(),a=USERS[u];
+  if(!a||a.pass!==$("uPass").value)return $("uErr").textContent="Username atau password salah.";
+  role=a.role;username=u;$("uPass").value="";$("login").style.display="none";applyRole();
+};
+$("uGuest").onclick=e=>{e.preventDefault();role="guest";username="";$("login").style.display="none";applyRole()};
+$("uPass").onkeydown=e=>{if(e.key==="Enter")$("uOk").click()};
+$("toggle").onclick=()=>$("side").classList.toggle("hide");
+$("close").onclick=()=>$("side").classList.add("hide");
+$("min").onclick=()=>$("side").classList.toggle("min");
+
+/* ===== INISIALISASI ===== */
+applyRole();
+(async()=>{
+  await Promise.all(KEYS.map(load));
+  KEYS.forEach(detect);buildFilters();rebuild();fit();
+  if(!KEYS.some(k=>DATA[k].length))$("info").textContent="Data belum termuat. Cek folder data/ dan nama file.";
+})();
+if(location.hash==="#masuk")$("btnLogin").click();
+</script>
+</body>
+</html>
