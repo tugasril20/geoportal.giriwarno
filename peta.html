@@ -167,17 +167,17 @@ select,input[type=text],input[type=password],input[type=file]{width:100%;padding
 /* ===== KONFIGURASI ===== */
 // Lokasi file data. Default: folder "data/" di repo yang sama (GitHub Pages).
 // Alternatif: "https://raw.githubusercontent.com/USERNAME/REPO/main/data/"
-const DATA_BASE="data/";
+const DATA_BASE="https://tugasril20.github.io/geoportal.giriwarno/";
 const CENTER=[-7.46,110.13];
 // field = nama kolom kategori (kosongkan agar dicari otomatis dari daftar hint)
 const LAYERS={
-  batas:{title:"Batas Administrasi",file:"batas_administrasi_wp.geojsonl",op:1},
-  persil:{title:"Persil Tanah",file:"persil.geojsonl",op:.6,field:"",fl:"Jenis hak",hint:["jenis_hak","tipehak","tipe_hak","jenishak","hak","status_hak"]},
-  lahan:{title:"Penggunaan Lahan",file:"pl.geojsonl",op:.6,field:"",fl:"Penggunaan lahan",hint:["penggunaan","penggunaan_lahan","guna_lahan","jenis","pl","kelas","tipe","remark","namobj"]}
+  batas:{title:"Batas Administrasi",file:"BATAS ADMINISTRASI_WP.geojsonl",op:1},
+  persil:{title:"Persil Tanah",file:"PERSIL.geojsonl",op:.6,field:"",fl:"Jenis hak",hint:["jenis_hak","tipehak","tipe_hak","jenishak","hak","status_hak"]},
+  lahan:{title:"Penggunaan Lahan",file:"PL.geojsonl",op:.6,field:"",fl:"Penggunaan lahan",hint:["penggunaan","penggunaan_lahan","guna_lahan","jenis","pl","kelas","tipe","remark","namobj"]}
 };
 const KEYS=Object.keys(LAYERS);
 const PAL=["#11508D","#e5566b","#2fb386","#f2a93b","#8e63e6","#26a6c9","#d96bb0","#8aa03a","#e57b3c","#5a6b8c","#b5483f","#3f9aa0"];
-const USERS={admin:{pass:"admin123",role:"superuser"},user:{pass:"user123",role:"user"}}; // DEMO SAJA
+const USERS={admin:{pass:"rildhaadmin",role:"superuser"},user:{pass:"user123",role:"user"}}; 
 const PERM={guest:{},user:{draw:1,download:1,upload:1},superuser:{draw:1,download:1,upload:1,admin:1}};
 const $=id=>document.getElementById(id);
 const E=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
