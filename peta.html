@@ -119,7 +119,7 @@ select,input[type=text],input[type=email],input[type=password],input[type=file]{
     <button class="btn" id="clrMeas">Hapus pengukuran</button>
   </div></details>
 
-  <details><summary>Digitasi polygon <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
+  <details><summary>Digitasi Polygon <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
     <div class="small">Klik tiap titik di peta, klik titik pertama untuk menutup polygon. Luas tampil saat menggambar.</div>
     <div class="pair"><button class="btn" data-draw="digit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17 7 6l12 2-1 10z"/></svg>Gambar polygon</button>
     <button class="btn" id="editDraw">Edit bentuk</button></div>
@@ -130,11 +130,11 @@ select,input[type=text],input[type=email],input[type=password],input[type=file]{
   </div></details>
 
 
-  <details data-perm="download"><summary>Unduh data (CSV) <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
+  <details data-perm="download"><summary>Unduh Data (CSV) <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
     <div class="small">Sesuai filter aktif, termasuk lat/long titik pusat.</div><div id="csvBtns" class="box" style="margin:0"></div>
   </div></details>
 
-  <details data-perm="upload"><summary>Upload data <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
+  <details data-perm="upload"><summary>Upload Data <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
     <select id="upLayer"></select>
     <input type="file" id="upFile" accept=".geojson,.json,.geojsonl">
     <button class="btn p" id="upBtn">Validasi dan upload</button>
@@ -142,7 +142,7 @@ select,input[type=text],input[type=email],input[type=password],input[type=file]{
     <div class="small">.geojson/.geojsonl, maks 25 MB, maks 20000 fitur, WGS84. Kiriman masuk antrean dan tampil untuk semua setelah disetujui super user.</div>
   </div></details>
 
-  <details data-perm="admin"><summary>Panel super user <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
+  <details data-perm="admin"><summary>Panel Super User <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="box">
     <div id="pending" class="small">Tidak ada antrean.</div>
     <button class="btn" id="resetData">Muat ulang data awal</button>
   </div></details>
@@ -177,8 +177,8 @@ const CENTER=[-7.46,110.13];
 // field = nama kolom kategori (kosongkan agar dicari otomatis dari daftar hint)
 const LAYERS={
   batas:{title:"Batas Administrasi",file:"BATAS ADMINISTRASI_WP.geojsonl",op:1},
-  persil:{title:"Persil Tanah",file:"PERSIL.geojsonl",op:.6,field:"",fl:"Jenis hak",hint:["jenis_hak","tipehak","tipe_hak","jenishak","hak","status_hak"]},
-  lahan:{title:"Penggunaan Lahan",file:"PL.geojsonl",op:.6,field:"",fl:"Penggunaan lahan",hint:["penggunaan","penggunaan_lahan","guna_lahan","jenis","pl","kelas","tipe","remark","namobj"]}
+  persil:{title:"Persil Tanah",file:"PERSIL.geojsonl",op:.6,field:"",fl:"Jenis Hak",hint:["jenis_hak","tipehak","tipe_hak","jenishak","hak","status_hak"]},
+  lahan:{title:"Penggunaan Lahan",file:"PL.geojsonl",op:.6,field:"",fl:"Penggunaan Lahan",hint:["penggunaan","penggunaan_lahan","guna_lahan","jenis","pl","kelas","tipe","remark","namobj"]}
 };
 const KEYS=Object.keys(LAYERS);
 const PAL=["#11508D","#e5566b","#2fb386","#f2a93b","#8e63e6","#26a6c9","#d96bb0","#8aa03a","#e57b3c","#5a6b8c","#b5483f","#3f9aa0"];
